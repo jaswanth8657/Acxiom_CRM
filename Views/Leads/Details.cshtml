@@ -1,0 +1,318 @@
+@model AcxiomCRM.ViewModels.Leads.LeadDetailsViewModel
+@{
+    ViewData["Title"] = $"Lead Details - {Model.LeadName}";
+}
+
+<div class="container-fluid py-3">
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2 small">
+            <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Leads</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.LeadCode</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="h3 fw-bold text-dark mb-0">@Model.LeadName</h1>
+                <span class="badge bg-light text-primary border">@Model.LeadCode</span>
+                @switch (Model.Status)
+                {
+                    case AcxiomCRM.Models.LeadStatus.New:
+                        <span class="badge bg-info text-dark">New</span>
+                        break;
+                    case AcxiomCRM.Models.LeadStatus.Contacted:
+                        <span class="badge bg-primary">Contacted</span>
+                        break;
+                    case AcxiomCRM.Models.LeadStatus.Qualified:
+                        <span class="badge bg-warning text-dark">Qualified</span>
+                        break;
+                    case AcxiomCRM.Models.LeadStatus.Unqualified:
+                        <span class="badge bg-secondary">Unqualified</span>
+                        break;
+                    case AcxiomCRM.Models.LeadStatus.Converted:
+                        <span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i>Converted</span>
+                        break;
+                    case AcxiomCRM.Models.LeadStatus.Lost:
+                        <span class="badge bg-danger">Lost</span>
+                        break;
+                }
+            </div>
+            <p class="text-muted mb-0 small">
+                @if (!string.IsNullOrEmpty(Model.CompanyName))
+                {
+                    <span><i class="bi bi-building me-1"></i>@Model.CompanyName &bull; </span>
+                }
+                Source: <strong>@Model.Source</strong> &bull; Assigned to: <strong>@Model.AssignedToUserName</strong>
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+            @if (Model.CanConvert)
+            {
+                <a asp-action="Convert" asp-route-id="@Model.Id" class="btn btn-success shadow-sm">
+                    <i class="bi bi-arrow-repeat me-1"></i> Convert to Account & Deal
+                </a>
+            }
+
+            @if (Model.CanEdit && Model.Status != AcxiomCRM.Models.LeadStatus.Converted)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i> Edit
+                </a>
+            }
+
+            @if (Model.CanDelete)
+            {
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i> Delete
+                </a>
+            }
+
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Converted Status Banner -->
+    @if (Model.Status == AcxiomCRM.Models.LeadStatus.Converted)
+    {
+        <div class="card border-0 shadow-sm bg-success bg-opacity-10 border-start border-success border-4 rounded-3 mb-4">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold text-success mb-1">
+                            <i class="bi bi-patch-check-fill me-2"></i>Lead Successfully Converted
+                        </h5>
+                        <p class="text-dark mb-0 small">
+                            Converted on <strong>@(Model.ConvertedDate.HasValue ? Model.ConvertedDate.Value.ToString("MMM dd, yyyy HH:mm") : "Recently")</strong>.
+                            Linked Customer:
+                            @if (Model.ConvertedCustomerId.HasValue)
+                            {
+                                <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.ConvertedCustomerId.Value" class="fw-bold text-primary text-decoration-none">
+                                    @Model.ConvertedCustomerName <i class="bi bi-box-arrow-up-right small"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <span>@Model.ConvertedCustomerName</span>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ConvertedOpportunityTitle))
+                            {
+                                <span> &bull; Created Deal: <strong>@Model.ConvertedOpportunityTitle</strong></span>
+                            }
+                        </p>
+                    </div>
+                    @if (Model.ConvertedCustomerId.HasValue)
+                    {
+                        <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.ConvertedCustomerId.Value" class="btn btn-success btn-sm">
+                            <i class="bi bi-building me-1"></i> View Customer Profile
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Left Column: Details Profile -->
+        <div class="col-12 col-lg-5 col-xl-4">
+            <!-- Lead Profile Card -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold text-dark">Profile Details</h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Lead Code</span>
+                            <span class="fw-semibold text-dark">@Model.LeadCode</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Contact Email</span>
+                            <a href="mailto:@Model.Email" class="text-primary text-decoration-none fw-semibold small">@Model.Email</a>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Phone Number</span>
+                            <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(Model.Phone) ? "-" : Model.Phone)</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Company</span>
+                            <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(Model.CompanyName) ? "-" : Model.CompanyName)</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Job Title</span>
+                            <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(Model.Title) ? "-" : Model.Title)</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Lead Source</span>
+                            <span class="badge bg-light text-dark border">@Model.Source</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Expected Value</span>
+                            <span class="fw-bold text-success">@(Model.ExpectedValue.HasValue ? Model.ExpectedValue.Value.ToString("C") : "-")</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Assigned Owner</span>
+                            <span class="fw-semibold text-dark">
+                                <i class="bi bi-person me-1"></i>@Model.AssignedToUserName
+                            </span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Created Date</span>
+                            <span class="text-muted small">@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                        {
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Created By</span>
+                                <span class="text-muted small">@Model.CreatedBy</span>
+                            </div>
+                        }
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Last Updated</span>
+                                <span class="text-muted small">@Model.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Workflow Actions (if not Converted) -->
+            @if (Model.CanEdit && Model.Status != AcxiomCRM.Models.LeadStatus.Converted)
+            {
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="card-title mb-0 fw-semibold text-dark">
+                            <i class="bi bi-lightning-charge text-warning me-1"></i> Quick Status Actions
+                        </h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-grid gap-2">
+                            @if (Model.Status == AcxiomCRM.Models.LeadStatus.New)
+                            {
+                                <form asp-action="ChangeStatus" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="LeadId" value="@Model.Id" />
+                                    <input type="hidden" name="NewStatus" value="Contacted" />
+                                    <input type="hidden" name="Note" value="Marked as Contacted via Quick Action" />
+                                    <button type="submit" class="btn btn-outline-primary w-100 text-start">
+                                        <i class="bi bi-telephone-outbound me-2"></i> Mark Contacted
+                                    </button>
+                                </form>
+                            }
+
+                            @if (Model.Status == AcxiomCRM.Models.LeadStatus.New || Model.Status == AcxiomCRM.Models.LeadStatus.Contacted)
+                            {
+                                <form asp-action="ChangeStatus" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="LeadId" value="@Model.Id" />
+                                    <input type="hidden" name="NewStatus" value="Qualified" />
+                                    <input type="hidden" name="Note" value="Lead Qualified for potential deal" />
+                                    <button type="submit" class="btn btn-outline-warning text-dark w-100 text-start">
+                                        <i class="bi bi-check2-circle me-2"></i> Qualify Lead
+                                    </button>
+                                </form>
+                            }
+
+                            @if (Model.Status == AcxiomCRM.Models.LeadStatus.Qualified)
+                            {
+                                <a asp-action="Convert" asp-route-id="@Model.Id" class="btn btn-success text-start">
+                                    <i class="bi bi-arrow-repeat me-2"></i> Convert to Customer & Opportunity
+                                </a>
+                            }
+
+                            @if (Model.Status != AcxiomCRM.Models.LeadStatus.Lost)
+                            {
+                                <form asp-action="ChangeStatus" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="LeadId" value="@Model.Id" />
+                                    <input type="hidden" name="NewStatus" value="Lost" />
+                                    <input type="hidden" name="Note" value="Closed as Lost" />
+                                    <button type="submit" class="btn btn-outline-danger w-100 text-start" onclick="return confirm('Are you sure you want to mark this lead as Lost?');">
+                                        <i class="bi bi-x-circle me-2"></i> Mark as Lost
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Right Column: Timeline & Activities -->
+        <div class="col-12 col-lg-7 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold text-dark">
+                        <i class="bi bi-clock-history text-secondary me-2"></i>Activity & History Trail
+                    </h5>
+                    <span class="badge bg-light text-secondary border">@Model.Activities.Count entries</span>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    @if (Model.Activities.Any())
+                    {
+                        <div class="timeline position-relative ps-4 border-start border-2 border-primary border-opacity-25 ms-2">
+                            @foreach (var act in Model.Activities)
+                            {
+                                <div class="position-relative mb-4">
+                                    <div class="position-absolute translate-middle-x bg-primary rounded-circle"
+                                         style="width: 12px; height: 12px; left: -22px; top: 6px;"></div>
+                                    <div class="bg-light p-3 rounded-3 border">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-semibold text-dark small">@act.Subject</span>
+                                            <span class="text-muted small">@act.ActivityDate.ToString("MMM dd, yyyy HH:mm")</span>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(act.Description))
+                                        {
+                                            <p class="text-secondary small mb-2">@act.Description</p>
+                                        }
+                                        <div class="d-flex justify-content-between align-items-center text-muted small">
+                                            <span><i class="bi bi-person me-1"></i>@act.PerformedByName</span>
+                                            <span class="badge bg-white text-secondary border">@act.ActivityType</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox display-6 d-block mb-2 text-secondary"></i>
+                            <p class="small mb-0">No activity logged yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

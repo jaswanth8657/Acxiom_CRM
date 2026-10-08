@@ -1,0 +1,332 @@
+@model AcxiomCRM.ViewModels.Leads.LeadListViewModel
+@{
+    ViewData["Title"] = "Leads";
+}
+
+<div class="container-fluid py-3">
+    <!-- Header -->
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center pb-3 mb-3 border-bottom">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">
+                <i class="bi bi-funnel text-primary me-2"></i>Lead Management
+            </h1>
+            <p class="text-muted mb-0 small">
+                Track, qualify, and convert sales prospects into accounts and opportunities
+            </p>
+        </div>
+        <div class="mt-3 mt-sm-0">
+            <a asp-action="Create" class="btn btn-primary px-3 shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Add Lead
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Pipeline KPI Cards -->
+    <div class="row g-2 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm bg-light text-center p-2 rounded-3 h-100">
+                <div class="text-muted small fw-semibold">Total Leads</div>
+                <div class="h4 fw-bold mb-0 text-dark">@Model.TotalCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm border-start border-info border-3 text-center p-2 rounded-3 h-100">
+                <div class="text-muted small fw-semibold">New</div>
+                <div class="h4 fw-bold mb-0 text-info">@Model.NewCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm border-start border-primary border-3 text-center p-2 rounded-3 h-100">
+                <div class="text-muted small fw-semibold">Contacted</div>
+                <div class="h4 fw-bold mb-0 text-primary">@Model.ContactedCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm border-start border-warning border-3 text-center p-2 rounded-3 h-100">
+                <div class="text-muted small fw-semibold">Qualified</div>
+                <div class="h4 fw-bold mb-0 text-warning">@Model.QualifiedCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm border-start border-success border-3 text-center p-2 rounded-3 h-100">
+                <div class="text-muted small fw-semibold">Converted</div>
+                <div class="h4 fw-bold mb-0 text-success">@Model.ConvertedCount</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm border-start border-secondary border-3 text-center p-2 rounded-3 h-100">
+                <div class="text-muted small fw-semibold">Lost</div>
+                <div class="h4 fw-bold mb-0 text-secondary">@Model.LostCount</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Filter Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3 p-md-4">
+            <form method="get" asp-action="Index" class="row g-2 align-items-end">
+                <div class="col-12 col-md-3">
+                    <label class="form-label small fw-semibold text-secondary">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted"><i class="bi bi-search"></i></span>
+                        <input type="text" name="SearchTerm" class="form-control" placeholder="Name, email, code, company..." value="@Model.Filter.SearchTerm" />
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary">Status</label>
+                    <select name="Status" class="form-select">
+                        <option value="">All Statuses</option>
+                        @foreach (var s in Enum.GetValues<AcxiomCRM.Models.LeadStatus>())
+                        {
+                            <option value="@s" selected="@(Model.Filter.Status == s)">@s</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label small fw-semibold text-secondary">Source</label>
+                    <select name="Source" class="form-select">
+                        <option value="">All Sources</option>
+                        @foreach (var src in AcxiomCRM.Models.LeadSources.All)
+                        {
+                            <option value="@src" selected="@(Model.Filter.Source == src)">@src</option>
+                        }
+                    </select>
+                </div>
+
+                @if (Model.CanManageAll && Model.AvailableUsers.Any())
+                {
+                    <div class="col-6 col-md-3">
+                        <label class="form-label small fw-semibold text-secondary">Assigned Executive</label>
+                        <select name="AssignedToUserId" class="form-select">
+                            <option value="">All Executives</option>
+                            @foreach (var user in Model.AvailableUsers)
+                            {
+                                <option value="@user.Value" selected="@(Model.Filter.AssignedToUserId == user.Value)">@user.Text</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                <div class="col-12 @(Model.CanManageAll && Model.AvailableUsers.Any() ? "col-md-2" : "col-md-5") d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-funnel me-1"></i> Filter
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary" title="Clear Filters">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leads Table Card -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <span class="fw-semibold text-dark">
+                Total Records: <strong>@Model.TotalItems</strong>
+            </span>
+            <span class="text-muted small">
+                Page @Model.CurrentPage of @(Model.TotalPages == 0 ? 1 : Model.TotalPages)
+            </span>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Leads.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3 text-secondary small fw-semibold">Code</th>
+                                <th class="text-secondary small fw-semibold">Lead Name</th>
+                                <th class="text-secondary small fw-semibold">Contact Info</th>
+                                <th class="text-secondary small fw-semibold">Source</th>
+                                <th class="text-secondary small fw-semibold">Expected Value</th>
+                                <th class="text-secondary small fw-semibold">Status</th>
+                                <th class="text-secondary small fw-semibold">Assigned To</th>
+                                <th class="text-end pe-3 text-secondary small fw-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var lead in Model.Leads)
+                            {
+                                <tr>
+                                    <td class="ps-3">
+                                        <a asp-action="Details" asp-route-id="@lead.Id" class="badge bg-light text-primary border text-decoration-none fw-semibold">
+                                            @lead.LeadCode
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">
+                                            <a asp-action="Details" asp-route-id="@lead.Id" class="text-dark text-decoration-none">
+                                                @lead.LeadName
+                                            </a>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(lead.CompanyName))
+                                        {
+                                            <div class="small text-muted"><i class="bi bi-building me-1"></i>@lead.CompanyName</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div><a href="mailto:@lead.Email" class="text-muted text-decoration-none small"><i class="bi bi-envelope me-1"></i>@lead.Email</a></div>
+                                        @if (!string.IsNullOrEmpty(lead.Phone))
+                                        {
+                                            <div class="small text-muted"><i class="bi bi-telephone me-1"></i>@lead.Phone</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">@lead.Source</span>
+                                    </td>
+                                    <td>
+                                        @(lead.ExpectedValue.HasValue ? lead.ExpectedValue.Value.ToString("C0") : "-")
+                                    </td>
+                                    <td>
+                                        @switch (lead.Status)
+                                        {
+                                            case AcxiomCRM.Models.LeadStatus.New:
+                                                <span class="badge bg-info text-dark">New</span>
+                                                break;
+                                            case AcxiomCRM.Models.LeadStatus.Contacted:
+                                                <span class="badge bg-primary">Contacted</span>
+                                                break;
+                                            case AcxiomCRM.Models.LeadStatus.Qualified:
+                                                <span class="badge bg-warning text-dark">Qualified</span>
+                                                break;
+                                            case AcxiomCRM.Models.LeadStatus.Unqualified:
+                                                <span class="badge bg-secondary">Unqualified</span>
+                                                break;
+                                            case AcxiomCRM.Models.LeadStatus.Converted:
+                                                <span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i>Converted</span>
+                                                break;
+                                            case AcxiomCRM.Models.LeadStatus.Lost:
+                                                <span class="badge bg-danger">Lost</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-secondary border">
+                                            <i class="bi bi-person me-1"></i>@lead.AssignedToUserName
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="btn-group btn-group-sm">
+                                            @if (lead.CanConvert)
+                                            {
+                                                <a asp-action="Convert" asp-route-id="@lead.Id" class="btn btn-outline-success btn-sm" title="Convert to Customer & Opportunity">
+                                                    <i class="bi bi-arrow-repeat me-1"></i>Convert
+                                                </a>
+                                            }
+                                            <a asp-action="Details" asp-route-id="@lead.Id" class="btn btn-outline-secondary" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            @if (lead.CanEdit && lead.Status != AcxiomCRM.Models.LeadStatus.Converted)
+                                            {
+                                                <a asp-action="Edit" asp-route-id="@lead.Id" class="btn btn-outline-primary" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            }
+                                            @if (lead.CanEdit)
+                                            {
+                                                <a asp-action="Delete" asp-route-id="@lead.Id" class="btn btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination Footer -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="card-footer bg-white py-3 border-top d-flex justify-content-between align-items-center">
+                        <div class="text-muted small">
+                            Showing @(((Model.CurrentPage - 1) * Model.PageSize) + 1) to @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalItems)) of @Model.TotalItems leads
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination pagination-sm mb-0">
+                                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-Page="@(Model.CurrentPage - 1)"
+                                       asp-route-PageSize="@Model.Filter.PageSize"
+                                       asp-route-SearchTerm="@Model.Filter.SearchTerm"
+                                       asp-route-Status="@Model.Filter.Status"
+                                       asp-route-Source="@Model.Filter.Source"
+                                       asp-route-AssignedToUserId="@Model.Filter.AssignedToUserId">
+                                        Previous
+                                    </a>
+                                </li>
+
+                                @for (int i = 1; i <= Model.TotalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                        <a class="page-link" asp-action="Index"
+                                           asp-route-Page="@i"
+                                           asp-route-PageSize="@Model.Filter.PageSize"
+                                           asp-route-SearchTerm="@Model.Filter.SearchTerm"
+                                           asp-route-Status="@Model.Filter.Status"
+                                           asp-route-Source="@Model.Filter.Source"
+                                           asp-route-AssignedToUserId="@Model.Filter.AssignedToUserId">
+                                            @i
+                                        </a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-Page="@(Model.CurrentPage + 1)"
+                                       asp-route-PageSize="@Model.Filter.PageSize"
+                                       asp-route-SearchTerm="@Model.Filter.SearchTerm"
+                                       asp-route-Status="@Model.Filter.Status"
+                                       asp-route-Source="@Model.Filter.Source"
+                                       asp-route-AssignedToUserId="@Model.Filter.AssignedToUserId">
+                                        Next
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="display-6 text-muted mb-3"><i class="bi bi-funnel"></i></div>
+                    <h5 class="fw-semibold text-secondary">No leads found</h5>
+                    <p class="text-muted small mb-3">Try adjusting your search criteria or add a new prospect.</p>
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i> Create First Lead
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

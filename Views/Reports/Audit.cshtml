@@ -1,0 +1,177 @@
+@using AcxiomCRM.ViewModels.Reports
+@model AuditReportViewModel
+
+@{
+    ViewData["Title"] = "Audit Log Report";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Audit Log Report</li>
+                </ol>
+            </nav>
+            <h1 class="h3 fw-bold text-dark mb-0">
+                <i class="bi bi-shield-check text-danger me-2"></i>System Audit Log Report
+            </h1>
+            <span class="badge bg-danger">Administrator Access Only</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="ExportAudit" 
+               asp-route-searchTerm="@Model.SearchTerm" 
+               asp-route-actionFilter="@Model.ActionFilter" 
+               asp-route-entityNameFilter="@Model.EntityNameFilter" 
+               asp-route-startDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))" 
+               asp-route-endDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))" 
+               asp-route-assignedToUserId="@Model.AssignedToUserId" 
+               class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export to CSV
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> All Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form method="get" asp-action="Audit" class="row g-2 align-items-center">
+                <div class="col-12 col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search details / user..." />
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <input type="text" name="ActionFilter" value="@Model.ActionFilter" class="form-control" placeholder="Action (e.g. Create)" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <input type="text" name="EntityNameFilter" value="@Model.EntityNameFilter" class="form-control" placeholder="Entity (e.g. Customer)" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <input type="date" name="StartDate" value="@(Model.StartDate?.ToString("yyyy-MM-dd"))" class="form-control" title="Start Date" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <input type="date" name="EndDate" value="@(Model.EndDate?.ToString("yyyy-MM-dd"))" class="form-control" title="End Date" />
+                </div>
+
+                <div class="col-12 col-md-1 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark">
+                Audit Trail Entries <span class="badge bg-secondary ms-1">@Model.TotalItems logs</span>
+            </h6>
+            <div class="text-muted small">
+                Page @Model.Page of @Math.Max(1, Model.TotalPages)
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 font-monospace small">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Timestamp (UTC)</th>
+                            <th>User</th>
+                            <th>Action</th>
+                            <th>Entity</th>
+                            <th>Entity ID</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>@item.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                    <td><span class="badge bg-light text-dark border">@item.UserName</span></td>
+                                    <td>
+                                        @if (item.Action.Contains("Create", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success">@item.Action</span>
+                                        }
+                                        else if (item.Action.Contains("Delete", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger">@item.Action</span>
+                                        }
+                                        else if (item.Action.Contains("Update", StringComparison.OrdinalIgnoreCase) || item.Action.Contains("Convert", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <span class="badge bg-warning-subtle text-warning border border-warning">@item.Action</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@item.Action</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold">@item.EntityName</td>
+                                    <td>@(item.EntityId ?? "-")</td>
+                                    <td class="text-break" style="max-width: 320px;">@(item.Details ?? "-")</td>
+                                    <td>@(item.IpAddress ?? "-")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted font-sans-serif">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    No audit records found matching the filter criteria.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center py-2">
+                <div>
+                    <span class="text-muted small">Showing @(Model.Items?.Count ?? 0) of @Model.TotalItems entries</span>
+                </div>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                        <a class="page-link" asp-action="Audit" 
+                           asp-route-page="@(Model.Page - 1)" 
+                           asp-route-searchTerm="@Model.SearchTerm" 
+                           asp-route-actionFilter="@Model.ActionFilter" 
+                           asp-route-entityNameFilter="@Model.EntityNameFilter" 
+                           asp-route-startDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-endDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-assignedToUserId="@Model.AssignedToUserId">Previous</a>
+                    </li>
+                    <li class="page-item active">
+                        <span class="page-link">@Model.Page / @Model.TotalPages</span>
+                    </li>
+                    <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                        <a class="page-link" asp-action="Audit" 
+                           asp-route-page="@(Model.Page + 1)" 
+                           asp-route-searchTerm="@Model.SearchTerm" 
+                           asp-route-actionFilter="@Model.ActionFilter" 
+                           asp-route-entityNameFilter="@Model.EntityNameFilter" 
+                           asp-route-startDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-endDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-assignedToUserId="@Model.AssignedToUserId">Next</a>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+</div>

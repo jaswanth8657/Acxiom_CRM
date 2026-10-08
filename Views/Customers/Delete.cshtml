@@ -1,0 +1,69 @@
+@model AcxiomCRM.ViewModels.Customers.CustomerDeleteViewModel
+@{
+    ViewData["Title"] = "Deactivate Customer: " + Model.CustomerName;
+}
+
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Customers</a></li>
+            <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.CustomerCode</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Deactivate</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-danger text-white py-3">
+                    <h5 class="card-title fw-bold mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Deactivation
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-warning mb-4 small" role="alert">
+                        <strong>Soft Deactivation Notice:</strong>
+                        This action will set the customer account status to <strong>Inactive</strong>.
+                        Existing pipeline opportunities, follow-up notes, and activity history will be safely preserved.
+                    </div>
+
+                    <div class="card bg-light border-0 mb-4 p-3">
+                        <dl class="row mb-0 small">
+                            <dt class="col-sm-4 text-muted">Customer Code:</dt>
+                            <dd class="col-sm-8 fw-bold text-dark">@Model.CustomerCode</dd>
+
+                            <dt class="col-sm-4 text-muted">Customer Name:</dt>
+                            <dd class="col-sm-8 fw-semibold text-dark">@Model.CustomerName</dd>
+
+                            <dt class="col-sm-4 text-muted">Company:</dt>
+                            <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.CompanyName) ? "—" : Model.CompanyName)</dd>
+
+                            <dt class="col-sm-4 text-muted">Email:</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+
+                            <dt class="col-sm-4 text-muted">Phone:</dt>
+                            <dd class="col-sm-8">@Model.Phone</dd>
+
+                            <dt class="col-sm-4 text-muted">Assigned To:</dt>
+                            <dd class="col-sm-8">@Model.AssignedToUserName</dd>
+                        </dl>
+                    </div>
+
+                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary px-3">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-danger px-4 fw-semibold shadow-sm">
+                                <i class="bi bi-slash-circle me-1"></i> Deactivate Customer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

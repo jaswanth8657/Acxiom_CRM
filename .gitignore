@@ -1,0 +1,45 @@
+## Build and compile artifacts
+[Bb]in/
+[Oo]bj/
+bin/
+obj/
+out/
+
+## Visual Studio & VS Code
+.vs/
+.vscode/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+
+## Database files (SQLite)
+*.db
+*.db-shm
+*.db-wal
+AcxiomCRM.db
+AcxiomCRM.db-shm
+AcxiomCRM.db-wal
+
+## Test and coverage results
+[Tt]est[Rr]esults/
+TestResults/
+*.trx
+*.coverage
+
+## Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+## OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Logs and temporary files
+*.log
+*.tmp
+*.bak

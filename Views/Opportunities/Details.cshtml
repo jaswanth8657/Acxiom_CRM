@@ -1,0 +1,303 @@
+@model AcxiomCRM.ViewModels.Opportunities.OpportunityDetailsViewModel
+@{
+    ViewData["Title"] = $"Opportunity Details - {Model.OpportunityName}";
+}
+
+<div class="container-fluid py-3">
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2 small">
+            <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Opportunities</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.OpportunityName</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="h3 fw-bold text-dark mb-0">@Model.OpportunityName</h1>
+                @switch (Model.Stage)
+                {
+                    case AcxiomCRM.Models.OpportunityStage.Prospecting:
+                        <span class="badge bg-secondary">Prospecting</span>
+                        break;
+                    case AcxiomCRM.Models.OpportunityStage.Qualification:
+                        <span class="badge bg-info text-dark">Qualification</span>
+                        break;
+                    case AcxiomCRM.Models.OpportunityStage.Proposal:
+                        <span class="badge bg-primary">Proposal</span>
+                        break;
+                    case AcxiomCRM.Models.OpportunityStage.Negotiation:
+                        <span class="badge bg-warning text-dark">Negotiation</span>
+                        break;
+                    case AcxiomCRM.Models.OpportunityStage.Won:
+                        <span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i>Closed Won</span>
+                        break;
+                    case AcxiomCRM.Models.OpportunityStage.Lost:
+                        <span class="badge bg-danger">Closed Lost</span>
+                        break;
+                }
+                @if (Model.Status == AcxiomCRM.Models.OpportunityStatus.Active)
+                {
+                    <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Inactive</span>
+                }
+            </div>
+            <p class="text-muted mb-0 small">
+                Account:
+                <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.CustomerId" class="fw-bold text-primary text-decoration-none">
+                    <i class="bi bi-building me-1"></i>@Model.CustomerName
+                </a>
+                &bull; Assigned to: <strong>@Model.AssignedToUserName</strong>
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+            @if (Model.CanEdit)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i> Edit Opportunity
+                </a>
+            }
+
+            @if (Model.CanDelete)
+            {
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i> Deactivate
+                </a>
+            }
+
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Pipeline
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Originating Lead Banner (if converted from lead) -->
+    @if (Model.LeadId.HasValue)
+    {
+        <div class="card border-0 shadow-sm bg-primary bg-opacity-10 border-start border-primary border-4 rounded-3 mb-4">
+            <div class="card-body p-3 p-md-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                    <div>
+                        <h6 class="fw-bold text-primary mb-1">
+                            <i class="bi bi-funnel-fill me-2"></i>Originating Sales Lead
+                        </h6>
+                        <p class="text-dark mb-0 small">
+                            This opportunity was generated from converted prospect
+                            <strong>@(string.IsNullOrEmpty(Model.LeadName) ? $"Lead #{Model.LeadId}" : Model.LeadName)</strong>
+                            @(string.IsNullOrEmpty(Model.LeadCode) ? "" : $"({Model.LeadCode})").
+                        </p>
+                    </div>
+                    <a asp-controller="Leads" asp-action="Details" asp-route-id="@Model.LeadId.Value" class="btn btn-primary btn-sm">
+                        <i class="bi bi-eye me-1"></i> View Lead Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Left Column: Deal Metrics & Profile -->
+        <div class="col-12 col-lg-5 col-xl-4">
+            <!-- Pipeline Value Summary Card -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4 bg-light">
+                <div class="card-body p-4 text-center">
+                    <div class="text-muted small fw-semibold text-uppercase">Contract Value</div>
+                    <div class="display-6 fw-bold text-dark my-1">@Model.Amount.ToString("C")</div>
+                    <div class="d-flex justify-content-center gap-3 mt-3 pt-3 border-top">
+                        <div>
+                            <div class="text-muted small">Win Probability</div>
+                            <div class="h5 fw-bold text-secondary mb-0">@Model.Probability%</div>
+                        </div>
+                        <div class="border-end"></div>
+                        <div>
+                            <div class="text-muted small">Weighted Revenue</div>
+                            <div class="h5 fw-bold text-primary mb-0">@Model.WeightedAmount.ToString("C")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opportunity Details Card -->
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold text-dark">Deal Specifications</h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Account</span>
+                            <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.CustomerId" class="fw-semibold text-primary text-decoration-none small">
+                                @Model.CustomerName
+                            </a>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Target Close Date</span>
+                            <span class="fw-semibold @(Model.ExpectedCloseDate < DateTime.Today && Model.Stage != AcxiomCRM.Models.OpportunityStage.Won && Model.Stage != AcxiomCRM.Models.OpportunityStage.Lost ? "text-danger" : "text-dark")">
+                                @Model.ExpectedCloseDate.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Pipeline Stage</span>
+                            <span class="fw-semibold text-dark">@Model.Stage</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Assigned Executive</span>
+                            <span class="fw-semibold text-dark">
+                                <i class="bi bi-person me-1"></i>@Model.AssignedToUserName
+                            </span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Created Date</span>
+                            <span class="text-muted small">@Model.CreatedDate.ToString("MMM dd, yyyy HH:mm")</span>
+                        </div>
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Last Updated</span>
+                                <span class="text-muted small">@Model.UpdatedAt.Value.ToString("MMM dd, yyyy HH:mm")</span>
+                            </div>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="mt-3 pt-3 border-top">
+                            <h6 class="small fw-semibold text-secondary mb-1">Deal Notes</h6>
+                            <p class="text-dark small mb-0 bg-light p-2 rounded">@Model.Notes</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Stage Transition Buttons (if not Won/Lost) -->
+            @if (Model.CanEdit && Model.Stage != AcxiomCRM.Models.OpportunityStage.Won && Model.Stage != AcxiomCRM.Models.OpportunityStage.Lost)
+            {
+                <div class="card border-0 shadow-sm rounded-3 mb-4">
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h6 class="card-title mb-0 fw-semibold text-dark">
+                            <i class="bi bi-lightning-charge text-warning me-1"></i> Quick Stage Actions
+                        </h6>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="d-grid gap-2">
+                            @if (Model.Stage == AcxiomCRM.Models.OpportunityStage.Qualification)
+                            {
+                                <form asp-action="ChangeStage" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="OpportunityId" value="@Model.Id" />
+                                    <input type="hidden" name="NewStage" value="Proposal" />
+                                    <input type="hidden" name="Note" value="Advanced to Proposal stage" />
+                                    <button type="submit" class="btn btn-outline-primary w-100 text-start">
+                                        <i class="bi bi-file-earmark-text me-2"></i> Advance to Proposal
+                                    </button>
+                                </form>
+                            }
+
+                            @if (Model.Stage == AcxiomCRM.Models.OpportunityStage.Proposal)
+                            {
+                                <form asp-action="ChangeStage" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="OpportunityId" value="@Model.Id" />
+                                    <input type="hidden" name="NewStage" value="Negotiation" />
+                                    <input type="hidden" name="Note" value="Advanced to Commercial Negotiation" />
+                                    <button type="submit" class="btn btn-outline-warning text-dark w-100 text-start">
+                                        <i class="bi bi-chat-quote me-2"></i> Advance to Negotiation
+                                    </button>
+                                </form>
+                            }
+
+                            <!-- Won / Lost Buttons -->
+                            <form asp-action="ChangeStage" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="OpportunityId" value="@Model.Id" />
+                                <input type="hidden" name="NewStage" value="Won" />
+                                <input type="hidden" name="Note" value="Deal successfully closed and won" />
+                                <button type="submit" class="btn btn-success w-100 text-start" onclick="return confirm('Confirm closing this deal as WON?');">
+                                    <i class="bi bi-trophy me-2"></i> Close as WON
+                                </button>
+                            </form>
+
+                            <form asp-action="ChangeStage" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="OpportunityId" value="@Model.Id" />
+                                <input type="hidden" name="NewStage" value="Lost" />
+                                <input type="hidden" name="Note" value="Deal closed as Lost" />
+                                <button type="submit" class="btn btn-outline-danger w-100 text-start" onclick="return confirm('Confirm closing this deal as LOST?');">
+                                    <i class="bi bi-x-circle me-2"></i> Mark as LOST
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Right Column: Timeline & Activities -->
+        <div class="col-12 col-lg-7 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold text-dark">
+                        <i class="bi bi-clock-history text-secondary me-2"></i>Activity & Stage History
+                    </h5>
+                    <span class="badge bg-light text-secondary border">@Model.Activities.Count entries</span>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    @if (Model.Activities.Any())
+                    {
+                        <div class="timeline position-relative ps-4 border-start border-2 border-primary border-opacity-25 ms-2">
+                            @foreach (var act in Model.Activities)
+                            {
+                                <div class="position-relative mb-4">
+                                    <div class="position-absolute translate-middle-x bg-primary rounded-circle"
+                                         style="width: 12px; height: 12px; left: -22px; top: 6px;"></div>
+                                    <div class="bg-light p-3 rounded-3 border">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <span class="fw-semibold text-dark small">@act.Subject</span>
+                                            <span class="text-muted small">@act.ActivityDate.ToString("MMM dd, yyyy HH:mm")</span>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(act.Description))
+                                        {
+                                            <p class="text-secondary small mb-2">@act.Description</p>
+                                        }
+                                        <div class="d-flex justify-content-between align-items-center text-muted small">
+                                            <span><i class="bi bi-person me-1"></i>@act.PerformedByName</span>
+                                            <span class="badge bg-white text-secondary border">@act.ActivityType</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox display-6 d-block mb-2 text-secondary"></i>
+                            <p class="small mb-0">No deal activity recorded yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

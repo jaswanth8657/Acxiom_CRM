@@ -1,0 +1,218 @@
+@using AcxiomCRM.ViewModels.Reports
+@using AcxiomCRM.Models
+@model FollowUpReportViewModel
+
+@{
+    ViewData["Title"] = "Follow-Up Report";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Follow-Up Report</li>
+                </ol>
+            </nav>
+            <h1 class="h3 fw-bold text-dark mb-0">
+                <i class="bi bi-calendar-check text-warning me-2"></i>Follow-Up Report
+            </h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="ExportFollowUps" 
+               asp-route-searchTerm="@Model.SearchTerm" 
+               asp-route-status="@Model.Status" 
+               asp-route-type="@Model.Type" 
+               asp-route-startDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))" 
+               asp-route-endDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))" 
+               asp-route-assignedToUserId="@Model.AssignedToUserId" 
+               class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export to CSV
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> All Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form method="get" asp-action="FollowUps" class="row g-2 align-items-center">
+                <div class="col-12 col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="SearchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search follow-ups..." />
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <select name="Status" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Planned" selected="@(Model.Status == FollowUpStatus.Planned)">Planned</option>
+                        <option value="Completed" selected="@(Model.Status == FollowUpStatus.Completed)">Completed</option>
+                        <option value="Missed" selected="@(Model.Status == FollowUpStatus.Missed)">Missed</option>
+                        <option value="Cancelled" selected="@(Model.Status == FollowUpStatus.Cancelled)">Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <select name="Type" class="form-select">
+                        <option value="">All Types</option>
+                        <option value="Call" selected="@(Model.Type == FollowUpType.Call)">Call</option>
+                        <option value="Meeting" selected="@(Model.Type == FollowUpType.Meeting)">Meeting</option>
+                        <option value="Email" selected="@(Model.Type == FollowUpType.Email)">Email</option>
+                        <option value="Task" selected="@(Model.Type == FollowUpType.Task)">Task</option>
+                        <option value="Other" selected="@(Model.Type == FollowUpType.Other)">Other</option>
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <input type="date" name="StartDate" value="@(Model.StartDate?.ToString("yyyy-MM-dd"))" class="form-control" placeholder="From Date" title="From Date" />
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <input type="date" name="EndDate" value="@(Model.EndDate?.ToString("yyyy-MM-dd"))" class="form-control" placeholder="To Date" title="To Date" />
+                </div>
+
+                @if (Model.CanFilterUsers)
+                {
+                    <div class="col-6 col-md-3">
+                        <select name="AssignedToUserId" class="form-select">
+                            <option value="">All Assigned Users</option>
+                            @foreach (var user in Model.AvailableUsers)
+                            {
+                                <option value="@user.Value" selected="@(Model.AssignedToUserId == user.Value)">@user.Text</option>
+                            }
+                        </select>
+                    </div>
+                }
+
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+                    <a asp-action="FollowUps" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0 text-dark">
+                Results <span class="badge bg-secondary ms-1">@Model.TotalItems items</span>
+            </h6>
+            <div class="text-muted small">
+                Page @Model.Page of @Math.Max(1, Model.TotalPages)
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Subject</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Scheduled Date</th>
+                            <th>Related To</th>
+                            <th>Assigned To</th>
+                            <th>Completed Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items != null && Model.Items.Any())
+                        {
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">
+                                        @item.Subject
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">@item.Type</span></td>
+                                    <td>
+                                        @if (item.Status == FollowUpStatus.Completed)
+                                        {
+                                            <span class="badge bg-success">Completed</span>
+                                        }
+                                        else if (item.Status == FollowUpStatus.Missed)
+                                        {
+                                            <span class="badge bg-danger">Missed</span>
+                                        }
+                                        else if (item.Status == FollowUpStatus.Cancelled)
+                                        {
+                                            <span class="badge bg-secondary">Cancelled</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">Planned</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @item.ScheduledDate.ToString("yyyy-MM-dd HH:mm")
+                                        @if (item.IsOverdue)
+                                        {
+                                            <span class="badge bg-danger ms-1">Overdue</span>
+                                        }
+                                    </td>
+                                    <td>@(item.RelatedRecordName ?? "-")</td>
+                                    <td>@item.AssignedToUserName</td>
+                                    <td>@(item.CompletedAt.HasValue ? item.CompletedAt.Value.ToString("yyyy-MM-dd HH:mm") : "-")</td>
+                                    <td>
+                                        <a asp-controller="FollowUps" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary py-0 px-2">
+                                            View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                    No follow-up records found matching the filter criteria.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer bg-white border-top d-flex justify-content-between align-items-center py-2">
+                <div>
+                    <span class="text-muted small">Showing @(Model.Items?.Count ?? 0) of @Model.TotalItems entries</span>
+                </div>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                        <a class="page-link" asp-action="FollowUps" 
+                           asp-route-page="@(Model.Page - 1)" 
+                           asp-route-searchTerm="@Model.SearchTerm" 
+                           asp-route-status="@Model.Status" 
+                           asp-route-type="@Model.Type" 
+                           asp-route-startDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-endDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-assignedToUserId="@Model.AssignedToUserId">Previous</a>
+                    </li>
+                    <li class="page-item active">
+                        <span class="page-link">@Model.Page / @Model.TotalPages</span>
+                    </li>
+                    <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                        <a class="page-link" asp-action="FollowUps" 
+                           asp-route-page="@(Model.Page + 1)" 
+                           asp-route-searchTerm="@Model.SearchTerm" 
+                           asp-route-status="@Model.Status" 
+                           asp-route-type="@Model.Type" 
+                           asp-route-startDate="@(Model.StartDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-endDate="@(Model.EndDate?.ToString("yyyy-MM-dd"))" 
+                           asp-route-assignedToUserId="@Model.AssignedToUserId">Next</a>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+</div>

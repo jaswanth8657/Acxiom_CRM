@@ -1,0 +1,133 @@
+@using AcxiomCRM.ViewModels.Reports
+@model ConversionReportViewModel
+
+@{
+    ViewData["Title"] = "Lead Conversion Report";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom gap-2">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small">
+                    <li class="breadcrumb-item"><a asp-action="Index">Reports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Conversion Report</li>
+                </ol>
+            </nav>
+            <h1 class="h3 fw-bold text-dark mb-0">
+                <i class="bi bi-graph-up-arrow text-success me-2"></i>Lead Conversion Report
+            </h1>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="ExportConversion" class="btn btn-outline-success">
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export to CSV
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> All Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 border-start border-primary border-4">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Total Leads</div>
+                    <div class="fs-4 fw-bold text-dark my-1">@Model.TotalLeads</div>
+                    <div class="small text-muted">All Time Enquiries</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 border-start border-success border-4 bg-success bg-opacity-10">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Converted Leads</div>
+                    <div class="fs-4 fw-bold text-success my-1">@Model.ConvertedLeads</div>
+                    <div class="small text-muted">Active Customers</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 border-start border-info border-4">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Conversion Rate</div>
+                    <div class="fs-4 fw-bold text-info my-1">@Model.OverallConversionRate%</div>
+                    <div class="small text-muted">Lead to Customer %</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 border-start border-warning border-4">
+                <div class="card-body p-3">
+                    <div class="text-muted small fw-semibold text-uppercase">Converted Revenue</div>
+                    <div class="fs-4 fw-bold text-dark my-1">@Model.TotalConvertedRevenue.ToString("C0")</div>
+                    <div class="small text-muted">Avg: @Model.AverageConvertedDealValue.ToString("C0")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Source Breakdown Table -->
+    <div class="card border-0 shadow-sm rounded-3">
+        <div class="card-header bg-white py-3 border-bottom">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-funnel text-info me-2"></i>Conversion Rate by Lead Source
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Lead Source</th>
+                            <th class="text-center">Total Enquiries</th>
+                            <th class="text-center">Converted</th>
+                            <th class="text-center">Lost</th>
+                            <th class="text-end">Conversion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.SourceBreakdowns != null && Model.SourceBreakdowns.Any())
+                        {
+                            @foreach (var src in Model.SourceBreakdowns)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-light text-dark border fw-semibold">@src.Source</span>
+                                    </td>
+                                    <td class="text-center">@src.TotalLeads</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success-subtle text-success border border-success">@src.ConvertedLeads</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger-subtle text-danger border border-danger">@src.LostLeads</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex align-items-center justify-content-end gap-2">
+                                            <span class="fw-bold">@src.ConversionRate%</span>
+                                            <div class="progress" style="width: 80px; height: 8px;">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: @src.ConversionRate%" aria-valuenow="@src.ConversionRate" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    No conversion data available.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,319 @@
+@model AcxiomCRM.ViewModels.FollowUps.FollowUpDetailsViewModel
+@{
+    ViewData["Title"] = $"Follow-Up Details - {Model.Subject}";
+}
+
+<div class="container-fluid py-3">
+    <!-- Breadcrumb & Header -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-2 small">
+            <li class="breadcrumb-item"><a asp-action="Index" class="text-decoration-none">Follow-Ups</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Subject</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center pb-3 mb-4 border-bottom">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h1 class="h3 fw-bold text-dark mb-0">@Model.Subject</h1>
+                @switch (Model.Status)
+                {
+                    case AcxiomCRM.Models.FollowUpStatus.Planned:
+                        if (Model.ScheduledDate.Date < DateTime.Today)
+                        {
+                            <span class="badge bg-danger">Overdue</span>
+                        }
+                        else if (Model.ScheduledDate.Date == DateTime.Today)
+                        {
+                            <span class="badge bg-warning text-dark">Due Today</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info text-dark">Planned</span>
+                        }
+                        break;
+                    case AcxiomCRM.Models.FollowUpStatus.Completed:
+                        <span class="badge bg-success"><i class="bi bi-check2-circle me-1"></i>Completed</span>
+                        break;
+                    case AcxiomCRM.Models.FollowUpStatus.Missed:
+                        <span class="badge bg-danger">Missed</span>
+                        break;
+                    case AcxiomCRM.Models.FollowUpStatus.Cancelled:
+                        <span class="badge bg-secondary">Cancelled</span>
+                        break;
+                }
+                <span class="badge bg-light text-dark border">@Model.Type</span>
+                <span class="badge bg-light text-dark border">Priority: @Model.Priority</span>
+            </div>
+            <p class="text-muted mb-0 small">
+                Assigned to: <strong>@Model.AssignedToUserName</strong>
+                &bull; Created: @Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")
+                @if (Model.CompletedAt.HasValue)
+                {
+                    <span>&bull; Completed on: <strong class="text-success">@Model.CompletedAt.Value.ToString("MMM dd, yyyy HH:mm")</strong></span>
+                }
+            </p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-3 mt-md-0">
+            @if (Model.CanComplete)
+            {
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#completeModal">
+                    <i class="bi bi-check2-circle me-1"></i> Complete
+                </button>
+            }
+
+            @if (Model.CanMarkMissed)
+            {
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#missedModal">
+                    <i class="bi bi-x-circle me-1"></i> Mark Missed
+                </button>
+            }
+
+            @if (Model.CanEdit)
+            {
+                <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#rescheduleModal">
+                    <i class="bi bi-calendar-event me-1"></i> Reschedule
+                </button>
+
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil me-1"></i> Edit
+                </a>
+            }
+
+            @if (Model.CanCancel)
+            {
+                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                    <i class="bi bi-slash-circle me-1"></i> Cancel
+                </button>
+            }
+
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Left: Task Specs -->
+        <div class="col-12 col-lg-5 col-xl-4">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold text-dark">Schedule Overview</h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Target Date & Time</span>
+                            <span class="fw-semibold @(Model.ScheduledDate < DateTime.Now && Model.Status == AcxiomCRM.Models.FollowUpStatus.Planned ? "text-danger" : "text-dark")">
+                                @Model.ScheduledDate.ToString("MMM dd, yyyy HH:mm")
+                            </span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Task Type</span>
+                            <span class="fw-semibold text-dark">@Model.Type</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Priority</span>
+                            <span class="fw-semibold text-dark">@Model.Priority</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Current Status</span>
+                            <span class="fw-semibold text-dark">@Model.Status</span>
+                        </div>
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <span class="text-muted small">Assigned Owner</span>
+                            <span class="fw-semibold text-dark">@Model.AssignedToUserName</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Associated Entities Card -->
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold text-dark">Related CRM Records</h5>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        @if (Model.CustomerId.HasValue)
+                        {
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Customer Account</span>
+                                <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.CustomerId.Value" class="fw-semibold text-primary text-decoration-none small">
+                                    <i class="bi bi-building me-1"></i>@Model.CustomerName
+                                </a>
+                            </div>
+                        }
+
+                        @if (Model.LeadId.HasValue)
+                        {
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Sales Lead</span>
+                                <a asp-controller="Leads" asp-action="Details" asp-route-id="@Model.LeadId.Value" class="fw-semibold text-primary text-decoration-none small">
+                                    <i class="bi bi-funnel me-1"></i>@Model.LeadName
+                                </a>
+                            </div>
+                        }
+
+                        @if (Model.OpportunityId.HasValue)
+                        {
+                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Opportunity Deal</span>
+                                <a asp-controller="Opportunities" asp-action="Details" asp-route-id="@Model.OpportunityId.Value" class="fw-semibold text-primary text-decoration-none small">
+                                    <i class="bi bi-currency-dollar me-1"></i>@Model.OpportunityName
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Notes & Action History -->
+        <div class="col-12 col-lg-7 col-xl-8">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title mb-0 fw-semibold text-dark">
+                        <i class="bi bi-card-text text-primary me-2"></i>Remarks & Notes
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                    {
+                        <div class="p-3 bg-light rounded-3 text-secondary" style="white-space: pre-wrap;">@Model.Notes</div>
+                    }
+                    else
+                    {
+                        <div class="text-muted small fst-italic">No additional remarks or notes recorded for this follow-up.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Complete -->
+<div class="modal fade" id="completeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-action="Complete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Mark Follow-Up Completed</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Record the outcome or summary of this completed follow-up task.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">Outcome / Completion Remarks</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Discussion summary, next steps, action items..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check2-circle me-1"></i> Complete Task
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Mark Missed -->
+<div class="modal fade" id="missedModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-action="MarkMissed" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger">Mark Follow-Up Missed</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Mark this task as missed to preserve tracking history.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">Reason (Optional)</label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="e.g. Client did not answer, meeting postponed by client..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Mark as Missed</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Reschedule -->
+<div class="modal fade" id="rescheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-action="Reschedule" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-warning">Reschedule Follow-Up</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">New Target Date & Time</label>
+                        <input type="datetime-local" name="newDate" class="form-control" required value="@DateTime.Today.AddDays(1).AddHours(10).ToString("yyyy-MM-ddTHH:mm")" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">Reason for Rescheduling</label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="Reason for change..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning">Reschedule</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Cancel -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-secondary">Cancel Follow-Up</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">Cancelled follow-ups cannot be completed without an explicit reactivation workflow.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-secondary">Reason for Cancellation</label>
+                        <textarea name="reason" class="form-control" rows="2" placeholder="e.g. Deal lost, no longer required..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-secondary">Confirm Cancellation</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

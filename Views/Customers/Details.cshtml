@@ -1,0 +1,266 @@
+@model AcxiomCRM.ViewModels.Customers.CustomerDetailsViewModel
+@{
+    ViewData["Title"] = "Customer: " + Model.CustomerName;
+}
+
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Customers</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.CustomerCode</li>
+        </ol>
+    </nav>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Header Card -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="badge bg-primary fs-6">@Model.CustomerCode</span>
+                    @if (Model.Status == AcxiomCRM.Models.CustomerStatus.Active)
+                    {
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                            <i class="bi bi-check-circle me-1"></i>Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                            <i class="bi bi-dash-circle me-1"></i>Inactive
+                        </span>
+                    }
+                </div>
+                <h2 class="h3 fw-bold text-dark mb-1">@Model.CustomerName</h2>
+                <div class="text-muted">
+                    @(string.IsNullOrEmpty(Model.CompanyName) ? "Individual Account" : Model.CompanyName)
+                    @if (!string.IsNullOrEmpty(Model.Industry))
+                    {
+                        <span> • <i class="bi bi-tag text-muted"></i> @Model.Industry</span>
+                    }
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to List
+                </a>
+                @if (Model.CanEdit)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i> Edit
+                    </a>
+                }
+                @if (Model.CanDelete && Model.Status == AcxiomCRM.Models.CustomerStatus.Active)
+                {
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                        <i class="bi bi-slash-circle me-1"></i> Deactivate
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Contact & Location Card -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title fw-bold mb-0 text-dark">
+                        <i class="bi bi-person-lines-fill text-primary me-2"></i>Contact & Location
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted small fw-semibold text-uppercase">Email</dt>
+                        <dd class="col-sm-8"><a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a></dd>
+
+                        <dt class="col-sm-4 text-muted small fw-semibold text-uppercase">Phone</dt>
+                        <dd class="col-sm-8"><a href="tel:@Model.Phone" class="text-decoration-none">@Model.Phone</a></dd>
+
+                        <dt class="col-sm-4 text-muted small fw-semibold text-uppercase">Company</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.CompanyName) ? "—" : Model.CompanyName)</dd>
+
+                        <dt class="col-sm-4 text-muted small fw-semibold text-uppercase">Address</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.Address) ? "—" : Model.Address)</dd>
+
+                        <dt class="col-sm-4 text-muted small fw-semibold text-uppercase">City & State</dt>
+                        <dd class="col-sm-8">
+                            @(string.IsNullOrEmpty(Model.City) && string.IsNullOrEmpty(Model.State) ? "—" : $"{Model.City}, {Model.State}")
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted small fw-semibold text-uppercase">Postal & Country</dt>
+                        <dd class="col-sm-8">
+                            @(string.IsNullOrEmpty(Model.PostalCode) && string.IsNullOrEmpty(Model.Country) ? "—" : $"{Model.PostalCode} {Model.Country}")
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ownership & System Metadata Card -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="card-title fw-bold mb-0 text-dark">
+                        <i class="bi bi-shield-check text-success me-2"></i>Ownership & Metadata
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted small fw-semibold text-uppercase">Assigned Executive</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-light text-dark border px-2 py-1">
+                                <i class="bi bi-person me-1"></i>@Model.AssignedToUserName
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted small fw-semibold text-uppercase">Status</dt>
+                        <dd class="col-sm-7">
+                            @if (Model.Status == AcxiomCRM.Models.CustomerStatus.Active)
+                            {
+                                <span class="badge bg-success">Active Account</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Inactive / Deactivated</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted small fw-semibold text-uppercase">Created By</dt>
+                        <dd class="col-sm-7">@(string.IsNullOrEmpty(Model.CreatedBy) ? "System" : Model.CreatedBy)</dd>
+
+                        <dt class="col-sm-5 text-muted small fw-semibold text-uppercase">Created Date</dt>
+                        <dd class="col-sm-7">@Model.CreatedDate.ToString("yyyy-MM-dd HH:mm UTC")</dd>
+
+                        <dt class="col-sm-5 text-muted small fw-semibold text-uppercase">Last Updated</dt>
+                        <dd class="col-sm-7">
+                            @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm UTC") : "Never")
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related CRM Sections: Activities, Opportunities, Follow-Ups -->
+    <div class="row g-4">
+        <!-- Activities / History -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0 text-dark">
+                        <i class="bi bi-clock-history text-info me-2"></i>Activities & History
+                    </h5>
+                    <span class="badge bg-light text-secondary border">@Model.Activities.Count Records</span>
+                </div>
+                <div class="card-body p-3">
+                    @if (Model.Activities.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var act in Model.Activities)
+                            {
+                                <li class="list-group-item px-0 py-2 border-bottom">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="badge bg-secondary small">@act.Type</span>
+                                        <span class="text-muted small">@act.ActivityDate.ToString("g")</span>
+                                    </div>
+                                    <div class="fw-semibold text-dark">@act.Subject</div>
+                                    @if (!string.IsNullOrEmpty(act.Description))
+                                    {
+                                        <div class="small text-muted">@act.Description</div>
+                                    }
+                                    <div class="small text-secondary mt-1"><i class="bi bi-person me-1"></i>Logged by @act.UserName</div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4 text-muted small">
+                            <i class="bi bi-chat-left-dots fs-3 d-block text-secondary mb-1"></i>
+                            No interaction history recorded for this customer yet.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipeline Opportunities & Follow-Ups -->
+        <div class="col-12 col-lg-6">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0 text-dark">
+                        <i class="bi bi-currency-dollar text-warning me-2"></i>Sales Opportunities
+                    </h5>
+                    <span class="badge bg-light text-secondary border">@Model.Opportunities.Count Deals</span>
+                </div>
+                <div class="card-body p-3">
+                    @if (Model.Opportunities.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var opp in Model.Opportunities)
+                            {
+                                <li class="list-group-item px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold text-dark">@opp.Title</div>
+                                        <div class="small text-muted">Stage: @opp.Stage • Close: @opp.ExpectedCloseDate.ToString("d")</div>
+                                    </div>
+                                    <span class="badge bg-success fs-6">$@opp.Amount.ToString("N0")</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3 text-muted small">
+                            No deals currently linked to this customer account.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title fw-bold mb-0 text-dark">
+                        <i class="bi bi-calendar-check text-info me-2"></i>Scheduled Follow-Ups
+                    </h5>
+                    <span class="badge bg-light text-secondary border">@Model.FollowUps.Count Tasks</span>
+                </div>
+                <div class="card-body p-3">
+                    @if (Model.FollowUps.Any())
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var fu in Model.FollowUps)
+                            {
+                                <li class="list-group-item px-0 py-2 border-bottom d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-semibold text-dark">@fu.Subject</div>
+                                        <div class="small text-muted">Due: @fu.ScheduledDate.ToString("g") • Priority: @fu.Priority</div>
+                                    </div>
+                                    <span class="badge bg-light text-dark border">@fu.Status</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3 text-muted small">
+                            No active follow-ups scheduled for this account.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

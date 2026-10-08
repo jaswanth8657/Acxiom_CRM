@@ -1,0 +1,256 @@
+@{
+    ViewData["Title"] = "Reports & Analytics";
+    bool isAdmin = ViewBag.IsAdmin == true;
+    bool isManager = ViewBag.IsManager == true;
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center pb-3 mb-4 border-bottom">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">
+                <i class="bi bi-bar-chart-line text-primary me-2"></i>Reports & Analytics
+            </h1>
+            <p class="text-muted mb-0">Select an evaluator report below to analyze CRM operational metrics and export data to CSV.</p>
+        </div>
+        <div>
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- 1. Customer Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary-subtle text-primary p-3 rounded-3 me-3">
+                            <i class="bi bi-building fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Customer Report</h5>
+                            <span class="badge bg-light text-secondary border">Accounts</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Comprehensive customer records, contact info, assignment, active status and registration dates.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="Customers" class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> View Report
+                        </a>
+                        <a asp-action="ExportCustomers" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Lead Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info-subtle text-info p-3 rounded-3 me-3">
+                            <i class="bi bi-funnel fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Lead Report</h5>
+                            <span class="badge bg-light text-secondary border">Prospects</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Lead pipeline analysis filtered by acquisition source, status, estimated value and conversion link.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="Leads" class="btn btn-info text-white btn-sm flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> View Report
+                        </a>
+                        <a asp-action="ExportLeads" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Follow-Up Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning-subtle text-warning p-3 rounded-3 me-3">
+                            <i class="bi bi-calendar-check fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Follow-Up Report</h5>
+                            <span class="badge bg-light text-secondary border">Schedule</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Task schedules, planned and missed follow-up tracking, overdue alerts, and completion timestamps.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="FollowUps" class="btn btn-warning text-dark btn-sm flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> View Report
+                        </a>
+                        <a asp-action="ExportFollowUps" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Opportunity Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success-subtle text-success p-3 rounded-3 me-3">
+                            <i class="bi bi-currency-dollar fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Opportunity Report</h5>
+                            <span class="badge bg-light text-secondary border">Deals</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Detailed deal list with stages, probabilities, deal amounts, weighted values and expected close dates.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="Opportunities" class="btn btn-success btn-sm flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> View Report
+                        </a>
+                        <a asp-action="ExportOpportunities" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Pipeline Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary-subtle text-primary p-3 rounded-3 me-3">
+                            <i class="bi bi-bar-chart-steps fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Pipeline Report</h5>
+                            <span class="badge bg-light text-secondary border">Aggregates</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Stage-wise pipeline distribution, weighted value forecasts, and team owner distribution breakdown.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="Pipeline" class="btn btn-primary btn-sm flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> View Report
+                        </a>
+                        <a asp-action="ExportPipeline" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Conversion Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-success-subtle text-success p-3 rounded-3 me-3">
+                            <i class="bi bi-graph-up-arrow fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Conversion Report</h5>
+                            <span class="badge bg-light text-secondary border">Efficiency</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Lead conversion rates by acquisition channel, converted revenue generation and win-loss metrics.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="Conversion" class="btn btn-success btn-sm flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> View Report
+                        </a>
+                        <a asp-action="ExportConversion" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. User Activity Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-info-subtle text-info p-3 rounded-3 me-3">
+                            <i class="bi bi-people fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">User Activity Report</h5>
+                            <span class="badge bg-light text-secondary border">Productivity</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Sales representative productivity metrics: calls, meetings, tasks logged, completed follow-ups and deals closed.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        <a asp-action="UserActivity" class="btn btn-info text-white btn-sm flex-grow-1">
+                            <i class="bi bi-eye me-1"></i> View Report
+                        </a>
+                        <a asp-action="ExportUserActivity" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. Audit Report -->
+        <div class="col-12 col-md-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-3 h-100 hover-card @(isAdmin ? "" : "opacity-75")">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-danger-subtle text-danger p-3 rounded-3 me-3">
+                            <i class="bi bi-shield-check fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Audit Report</h5>
+                            <span class="badge bg-danger text-white">Admin Only</span>
+                        </div>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        Immutable system audit trail: user actions, record creations, status modifications and IP logs.
+                    </p>
+                    <div class="d-flex gap-2 mt-3">
+                        @if (isAdmin)
+                        {
+                            <a asp-action="Audit" class="btn btn-danger btn-sm flex-grow-1">
+                                <i class="bi bi-eye me-1"></i> View Report
+                            </a>
+                            <a asp-action="ExportAudit" class="btn btn-outline-secondary btn-sm" title="Export CSV">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-secondary btn-sm flex-grow-1" disabled title="Admin role required">
+                                <i class="bi bi-lock me-1"></i> Restricted
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

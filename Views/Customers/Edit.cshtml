@@ -1,0 +1,192 @@
+@model AcxiomCRM.ViewModels.Customers.CustomerEditViewModel
+@{
+    ViewData["Title"] = "Edit Customer";
+}
+
+<div class="container py-3">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Customers</a></li>
+            <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.Id">@Model.CustomerCode</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-10">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="card-title fw-bold mb-0 text-dark">
+                            <i class="bi bi-pencil-square text-primary me-2"></i>Edit Customer: @Model.CustomerName
+                        </h4>
+                        <span class="text-muted small">Update contact, address, or assignment details</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-eye me-1"></i> View Details
+                        </a>
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Back to List
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small" role="alert"></div>
+
+                        <!-- Basic Information -->
+                        <h6 class="fw-bold text-secondary mb-3 pb-2 border-bottom">
+                            <i class="bi bi-info-circle me-1"></i> Basic Information
+                        </h6>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-4">
+                                <label asp-for="CustomerCode" class="form-label small fw-semibold text-secondary"></label> <span class="text-danger">*</span>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-upc"></i></span>
+                                    <input asp-for="CustomerCode" class="form-control" />
+                                </div>
+                                <span asp-validation-for="CustomerCode" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 col-md-8">
+                                <label asp-for="CustomerName" class="form-label small fw-semibold text-secondary"></label> <span class="text-danger">*</span>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                                    <input asp-for="CustomerName" class="form-control" />
+                                </div>
+                                <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <label asp-for="Email" class="form-label small fw-semibold text-secondary"></label> <span class="text-danger">*</span>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                                    <input asp-for="Email" class="form-control" />
+                                </div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label asp-for="Phone" class="form-label small fw-semibold text-secondary"></label> <span class="text-danger">*</span>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-telephone"></i></span>
+                                    <input asp-for="Phone" class="form-control" />
+                                </div>
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Organization Details -->
+                        <h6 class="fw-bold text-secondary mb-3 pb-2 border-bottom">
+                            <i class="bi bi-building me-1"></i> Organization & Business Details
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <label asp-for="CompanyName" class="form-label small fw-semibold text-secondary"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-briefcase"></i></span>
+                                    <input asp-for="CompanyName" class="form-control" />
+                                </div>
+                                <span asp-validation-for="CompanyName" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label asp-for="Industry" class="form-label small fw-semibold text-secondary"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-tag"></i></span>
+                                    <input asp-for="Industry" class="form-control" />
+                                </div>
+                                <span asp-validation-for="Industry" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <h6 class="fw-bold text-secondary mb-3 pb-2 border-bottom">
+                            <i class="bi bi-geo-alt me-1"></i> Address Information
+                        </h6>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <label asp-for="Address" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="Address" class="form-control" />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-4">
+                                <label asp-for="City" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="City" class="form-control" />
+                                <span asp-validation-for="City" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label asp-for="State" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="State" class="form-control" />
+                                <span asp-validation-for="State" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label asp-for="PostalCode" class="form-label small fw-semibold text-secondary"></label>
+                                <input asp-for="PostalCode" class="form-control" />
+                                <span asp-validation-for="PostalCode" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Status & Assignment -->
+                        <h6 class="fw-bold text-secondary mb-3 pb-2 border-bottom">
+                            <i class="bi bi-sliders me-1"></i> Status & Assignment
+                        </h6>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-6">
+                                <label asp-for="Status" class="form-label small fw-semibold text-secondary"></label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger small"></span>
+                            </div>
+
+                            @if (Model.AvailableUsers.Any())
+                            {
+                                <div class="col-12 col-md-6">
+                                    <label asp-for="AssignedToUserId" class="form-label small fw-semibold text-secondary"></label>
+                                    <select asp-for="AssignedToUserId" asp-items="Model.AvailableUsers" class="form-select"></select>
+                                    <span asp-validation-for="AssignedToUserId" class="text-danger small"></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <input type="hidden" asp-for="AssignedToUserId" />
+                            }
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="pt-3 border-top d-flex justify-content-end gap-2">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                                <i class="bi bi-save me-1"></i> Update Customer
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
